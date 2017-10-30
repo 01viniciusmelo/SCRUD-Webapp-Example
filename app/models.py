@@ -5,7 +5,6 @@ class It_companies(db.Model):
     # http://flask-sqlalchemy.pocoo.org/2.3/models/
 
     #__tablename__ = 'it_companies'
-
     company_id = db.Column(db.Integer, primary_key=True)
     rank = db.Column(db.Integer, unique=True, nullable=False)
     company_name = db.Column(db.String(255), nullable=False)

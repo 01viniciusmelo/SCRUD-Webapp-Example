@@ -1,12 +1,8 @@
 from app import app
 from flask import request, render_template
-from numbers import Number
-import pandas as pd
 from app import db
 from app.models import It_companies
 import json
-from flask import jsonify
-#from flask_sqlalchemy import SQLAlchemy
 
 # my routes
 @app.route('/')
@@ -22,12 +18,6 @@ def table_view():
     id_ = request.args.get('id_')
     mysql_data=[]
 
-    #debug
-    print('PAB> job = ', job)
-    print('PAB> id_ = ', id_)
-    #print('PAB> id_ is type ', type(id_))
-    #end debug
-
     if id_ is not None:
         try:
             check_id = int(id_) #id_ should be a str representation of a int
@@ -39,20 +29,15 @@ def table_view():
         # Execute job
         if (job == 'get_companies'):
             # Get companies
-            #print('PAB> I am in get_companies...')
-            #code from https://www.sitepoint.com/creating-a-scrud-system-using-jquery-json-and-datatables/
-            #PAB converted code from php to python and flask-sqlalchemy
             query = It_companies.query.order_by(It_companies.rank).all()
             if query is None:
                 result  = 'error'
                 message = 'query error'
             else:
-                #print('PAB> query : ', query)
                 result  = 'success'
                 message = 'query success'
                 mysql_data = []
                 for q in query:
-                    #print('PAB> Company : ', q.company_name)
                     functions  = '<div class="function_buttons"><ul>'
                     functions = functions + '<li class="function_edit"><a data-id="' + str(q.company_id) + '" data-name="' + q.company_name + '"><span>Edit</span></a></li>'
                     functions = functions + '<li class="function_delete"><a data-id="' + str(q.company_id) + '" data-name="' + q.company_name + '"><span>Delete</span></a></li>'
@@ -76,7 +61,6 @@ def table_view():
             else:
                 try:
                     q = It_companies.query.filter_by(company_id=id_).first()
-                    print('\nPAB> get_company query \n : ', q.company_name)
                     mysql_data = []
                     mysql_data.append({
                         "rank" : q.rank,
@@ -94,7 +78,6 @@ def table_view():
                     print('PAB> Exception in query : ', ex)
                     result  = 'error'
                     message = ex
-
         elif (job == 'add_company'):
             # Add company
             form_data = request.args
@@ -115,14 +98,13 @@ def table_view():
                 message = 'added new record'
             except Exception as ex:
                 db.session.rollback()
+                print('PAB> Exception in database operation : ', ex)
                 result = 'error'
                 message = ex
             finally:
-                print('PAB> the new company id is ', new_company.company_id)
-                print('PAB> Result = ', result)
-                print('PAB> Message = ', message)
-                #print(type(new_company.company_id))
-
+                # print('PAB> Result = ', result)
+                # print('PAB> Message = ', message)
+                pass
         elif (job == 'edit_company'):
             # Edit company
             if (id_ == ''):
@@ -130,11 +112,8 @@ def table_view():
                 message = 'id missing'
             else:
                 form_data = request.args
-                print('PAB> form data is : ', form_data)
-                print('PAB> requested id =  : ', id_, ' id type is ', type(id_))
                 try:
                     q = It_companies.query.filter_by(company_id=id_).first()
-                    print('\nPAB> edit company query was \n : ', q.company_id)
                     q.rank=form_data['rank']
                     q.company_name=form_data['company_name']
                     q.industries=form_data['industries']
@@ -143,19 +122,18 @@ def table_view():
                     q.employees=form_data['employees']
                     q.market_cap=form_data['market_cap']
                     q.headquarters=form_data['headquarters']
-                    print('\nPAB> edit company new q is \n : ', q.headquarters)
                     db.session.commit()
                     result  = 'success'
                     message = 'Company data changed'
                 except Exception as ex:
                     db.session.rollback()
-                    #print('PAB> Exception in query : ', ex)
+                    print('PAB> Exception in database operation : ', ex)
                     result  = 'error'
                     message = ex
                 finally:
-                    print('PAB> edit_company result : ', result)
-                    print('PAB> edit_company message : ', message)
-
+                    # print('PAB> edit_company result : ', result)
+                    # print('PAB> edit_company message : ', message)
+                    pass
         elif (job == 'delete_company'):
             # Delete company
             if (id == ''):
@@ -169,12 +147,13 @@ def table_view():
                     message = 'delete successful'
                 except Exception as ex:
                     db.session.rollback()
-                    #print('PAB> Exception in query : ', ex)
+                    print('PAB> Exception in database operation : ', ex)
                     result  = 'error'
                     message = ex
                 finally:
-                    print('PAB> delete_company result : ', result)
-                    print('PAB> delete_company message : ', message)
+                    # print('PAB> delete_company result : ', result)
+                    # print('PAB> delete_company message : ', message)
+                    pass
 
     # Prepare data
     data = {
@@ -182,8 +161,5 @@ def table_view():
       "message" : message,
       "data"    : mysql_data
     }
-
     # Convert dict to JSON array
-    json_data = json.dumps(data)
-    #print('\nPAB> json_data : \n', json_data)
-    return json_data
+    return json.dumps(data)
