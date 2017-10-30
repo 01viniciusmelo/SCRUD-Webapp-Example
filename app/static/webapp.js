@@ -1,6 +1,6 @@
 $(document).ready(function(){
     // On page load: "data"table
-    $('#table_companies').DataTable({
+    var table_companies = $('#table_companies').DataTable({
       "processing": true,
       "ajax": '/table_view?job=get_companies',
       "columns": [
@@ -149,7 +149,7 @@ $(document).ready(function(){
         request.done(function(output){
           if (output.result == 'success'){
             // Reload datable
-            table_companies.api().ajax.reload(function(){
+            table_companies.ajax.reload(function(){
               hide_loading_message();
               var company_name = $('#company_name').val();
               show_message("Company '" + company_name + "' added successfully.", 'success');
@@ -173,9 +173,9 @@ $(document).ready(function(){
       show_loading_message();
       var id      = $(this).data('id');
       var request = $.ajax({
-        url:          'data.php?job=get_company',
+        url:          '/table_view?job=get_company',
         cache:        false,
-        data:         'id=' + id,
+        data:         'id_=' + id,
         dataType:     'json',
         contentType:  'application/json; charset=utf-8',
         type:         'get'
@@ -212,8 +212,10 @@ $(document).ready(function(){
     // Edit company submit form
     $(document).on('submit', '#form_company.edit', function(e){
       e.preventDefault();
+      console.log("in edit company submit form")
       // Validate form
       if (form_company.valid() == true){
+        console.log("form_company is valid")
         // Send company information to database
         hide_ipad_keyboard();
         hide_lightbox();
@@ -221,7 +223,7 @@ $(document).ready(function(){
         var id        = $('#form_company').attr('data-id');
         var form_data = $('#form_company').serialize();
         var request   = $.ajax({
-          url:          'data.php?job=edit_company&id=' + id,
+          url:          '/table_view?job=edit_company&id_=' + id,
           cache:        false,
           data:         form_data,
           dataType:     'json',
@@ -231,7 +233,8 @@ $(document).ready(function(){
         request.done(function(output){
           if (output.result == 'success'){
             // Reload datable
-            table_companies.api().ajax.reload(function(){
+            table_companies.ajax.reload(function(){
+              console.log('in table_companies reload function')
               hide_loading_message();
               var company_name = $('#company_name').val();
               show_message("Company '" + company_name + "' edited successfully.", 'success');
@@ -256,7 +259,7 @@ $(document).ready(function(){
         show_loading_message();
         var id      = $(this).data('id');
         var request = $.ajax({
-          url:          'data.php?job=delete_company&id=' + id,
+          url:          '/table_view?job=delete_company&id_=' + id,
           cache:        false,
           dataType:     'json',
           contentType:  'application/json; charset=utf-8',
@@ -265,7 +268,7 @@ $(document).ready(function(){
         request.done(function(output){
           if (output.result == 'success'){
             // Reload datable
-            table_companies.api().ajax.reload(function(){
+            table_companies.ajax.reload(function(){
               hide_loading_message();
               show_message("Company '" + company_name + "' deleted successfully.", 'success');
             }, true);

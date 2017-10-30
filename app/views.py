@@ -6,6 +6,7 @@ from app import db
 from app.models import It_companies
 import json
 from flask import jsonify
+#from flask_sqlalchemy import SQLAlchemy
 
 # my routes
 @app.route('/')
@@ -14,27 +15,24 @@ def index():
 
 @app.route('/table_view')
 def table_view():
-    job = None
-    id_ = None
     result = ''
     message = ''
-    mysql_data = []
 
     job = request.args.get('job')
-    id_ = request.args.get('id')
-    print('PAB> job = ', job, '  id_ = ', id_)
+    id_ = request.args.get('id_')
+    mysql_data=[]
 
-    if job is not None:
-        if (job == 'get_companies' or
-            job == 'get_company'   or
-            job == 'add_company'   or
-            job == 'edit_company'  or
-            job == 'delete_company'):
-            if id_ is not None:
-                if not isinstance(id_, Number):
-                    id_ = None
-        else:
-            job = None
+    #debug
+    print('PAB> job = ', job)
+    print('PAB> id_ = ', id_)
+    #print('PAB> id_ is type ', type(id_))
+    #end debug
+
+    if id_ is not None:
+        try:
+            check_id = int(id_) #id_ should be a str representation of a int
+        except TypeError:
+            message = 'company_id must be an integer'
 
     # Valid job found
     if job is not None:
@@ -52,6 +50,7 @@ def table_view():
                 #print('PAB> query : ', query)
                 result  = 'success'
                 message = 'query success'
+                mysql_data = []
                 for q in query:
                     #print('PAB> Company : ', q.company_name)
                     functions  = '<div class="function_buttons"><ul>'
@@ -69,6 +68,113 @@ def table_view():
                         "headquarters"  : q.headquarters,
                         "functions" : functions
                     })
+        elif (job == 'get_company'):
+            # Get company
+            if (id_ == ''):
+                result  = 'error'
+                message = 'id missing'
+            else:
+                try:
+                    q = It_companies.query.filter_by(company_id=id_).first()
+                    print('\nPAB> get_company query \n : ', q.company_name)
+                    mysql_data = []
+                    mysql_data.append({
+                        "rank" : q.rank,
+                        "company_name" : q.company_name,
+                        "industries" : q.industries,
+                        "revenue" : q.revenue,
+                        "fiscal_year" : q.fiscal_year,
+                        "employees" : q.employees,
+                        "market_cap" : q.market_cap,
+                        "headquarters"  : q.headquarters
+                    })
+                    result  = 'success';
+                    message = 'query success'
+                except Exception as ex:
+                    print('PAB> Exception in query : ', ex)
+                    result  = 'error'
+                    message = ex
+
+        elif (job == 'add_company'):
+            # Add company
+            form_data = request.args
+            try:
+                new_company = It_companies(
+                    rank=form_data['rank'],
+                    company_name=form_data['company_name'],
+                    industries=form_data['industries'],
+                    revenue=form_data['revenue'],
+                    fiscal_year=form_data['fiscal_year'],
+                    employees=form_data['employees'],
+                    market_cap=form_data['market_cap'],
+                    headquarters=form_data['headquarters']
+                    )
+                db.session.add(new_company)
+                db.session.commit()
+                result = 'success'
+                message = 'added new record'
+            except Exception as ex:
+                db.session.rollback()
+                result = 'error'
+                message = ex
+            finally:
+                print('PAB> the new company id is ', new_company.company_id)
+                print('PAB> Result = ', result)
+                print('PAB> Message = ', message)
+                #print(type(new_company.company_id))
+
+        elif (job == 'edit_company'):
+            # Edit company
+            if (id_ == ''):
+                result  = 'error'
+                message = 'id missing'
+            else:
+                form_data = request.args
+                print('PAB> form data is : ', form_data)
+                print('PAB> requested id =  : ', id_, ' id type is ', type(id_))
+                try:
+                    q = It_companies.query.filter_by(company_id=id_).first()
+                    print('\nPAB> edit company query was \n : ', q.company_id)
+                    q.rank=form_data['rank']
+                    q.company_name=form_data['company_name']
+                    q.industries=form_data['industries']
+                    q.revenue=form_data['revenue']
+                    q.fiscal_year=form_data['fiscal_year']
+                    q.employees=form_data['employees']
+                    q.market_cap=form_data['market_cap']
+                    q.headquarters=form_data['headquarters']
+                    print('\nPAB> edit company new q is \n : ', q.headquarters)
+                    db.session.commit()
+                    result  = 'success'
+                    message = 'Company data changed'
+                except Exception as ex:
+                    db.session.rollback()
+                    #print('PAB> Exception in query : ', ex)
+                    result  = 'error'
+                    message = ex
+                finally:
+                    print('PAB> edit_company result : ', result)
+                    print('PAB> edit_company message : ', message)
+
+        elif (job == 'delete_company'):
+            # Delete company
+            if (id == ''):
+                result  = 'error'
+                message = 'id missing'
+            else:
+                try:
+                    q = It_companies.query.filter_by(company_id=id_).first()
+                    db.session.delete(q)
+                    result  = 'success'
+                    message = 'delete successful'
+                except Exception as ex:
+                    db.session.rollback()
+                    #print('PAB> Exception in query : ', ex)
+                    result  = 'error'
+                    message = ex
+                finally:
+                    print('PAB> delete_company result : ', result)
+                    print('PAB> delete_company message : ', message)
 
     # Prepare data
     data = {
@@ -81,134 +187,3 @@ def table_view():
     json_data = json.dumps(data)
     #print('\nPAB> json_data : \n', json_data)
     return json_data
-
-
-"""# Prepare array
-mysql_data = array();"""
-
-"""# Valid job found
-if (job != '')
-    # Connect to database
-    #db_connection = mysqli_connect($db_server, $db_username, $db_password, $db_name);
-    #if (mysqli_connect_errno())
-    #    $result  = 'error';
-    #    $message = 'Failed to connect to database: ' . mysqli_connect_error();
-    #    job     = ''
-
-    # Execute job
-    if (job == 'get_companies'){
-
-        # Get companies
-        $query = "SELECT * FROM it_companies ORDER BY rank";
-        $query = mysqli_query(db_connection, $query);
-        if (!$query)
-            $result  = 'error';
-            $message = 'query error';
-        else
-            $result  = 'success';
-            $message = 'query success';
-            while ($company = mysqli_fetch_array($query))
-                $functions  = '<div class="function_buttons"><ul>';
-                $functions .= '<li class="function_edit"><a data-id="'   . $company['company_id'] . '" data-name="' . $company['company_name'] . '"><span>Edit</span></a></li>';
-                $functions .= '<li class="function_delete"><a data-id="' . $company['company_id'] . '" data-name="' . $company['company_name'] . '"><span>Delete</span></a></li>';
-                $functions .= '</ul></div>';
-                mysql_data[] = array(
-                  "rank"          => $company['rank'],
-                  "company_name"  => $company['company_name'],
-                  "industries"    => $company['industries'],
-                  "revenue"       => '$ ' . $company['revenue'],
-                  "fiscal_year"   => $company['fiscal_year'],
-                  "employees"     => number_format($company['employees'], 0, '.', ','),
-                  "market_cap"    => '$ ' . $company['market_cap'],
-                  "headquarters"  => $company['headquarters'],
-                  "functions"     => $functions
-                )
-    elif (job == 'get_company'){
-
-        # Get company
-        if (id == '')
-            $result  = 'error';
-            $message = 'id missing';
-        else
-            $query = "SELECT * FROM it_companies WHERE company_id = '" . mysqli_real_escape_string(db_connection, id) . "'";
-            $query = mysqli_query(db_connection, $query);
-            if (!$query)
-                $result  = 'error';
-                $message = 'query error';
-            else
-                $result  = 'success';
-                $message = 'query success';
-                while ($company = mysqli_fetch_array($query))
-                    mysql_data[] = array(
-                    "rank"          => $company['rank'],
-                    "company_name"  => $company['company_name'],
-                    "industries"    => $company['industries'],
-                    "revenue"       => $company['revenue'],
-                    "fiscal_year"   => $company['fiscal_year'],
-                    "employees"     => $company['employees'],
-                    "market_cap"    => $company['market_cap'],
-                    "headquarters"  => $company['headquarters']
-                    );
-
-    elif (job == 'add_company')
-
-        # Add company
-        $query = "INSERT INTO it_companies SET ";
-        if (isset($_GET['rank']))         { $query .= "rank         = '" . mysqli_real_escape_string(db_connection, $_GET['rank'])         . "', "; }
-        if (isset($_GET['company_name'])) { $query .= "company_name = '" . mysqli_real_escape_string(db_connection, $_GET['company_name']) . "', "; }
-        if (isset($_GET['industries']))   { $query .= "industries   = '" . mysqli_real_escape_string(db_connection, $_GET['industries'])   . "', "; }
-        if (isset($_GET['revenue']))      { $query .= "revenue      = '" . mysqli_real_escape_string(db_connection, $_GET['revenue'])      . "', "; }
-        if (isset($_GET['fiscal_year']))  { $query .= "fiscal_year  = '" . mysqli_real_escape_string(db_connection, $_GET['fiscal_year'])  . "', "; }
-        if (isset($_GET['employees']))    { $query .= "employees    = '" . mysqli_real_escape_string(db_connection, $_GET['employees'])    . "', "; }
-        if (isset($_GET['market_cap']))   { $query .= "market_cap   = '" . mysqli_real_escape_string(db_connection, $_GET['market_cap'])   . "', "; }
-        if (isset($_GET['headquarters'])) { $query .= "headquarters = '" . mysqli_real_escape_string(db_connection, $_GET['headquarters']) . "'";   }
-        $query = mysqli_query(db_connection, $query);
-        if (!$query)
-            $result  = 'error';
-            $message = 'query error';
-        else
-            $result  = 'success';
-            $message = 'query success';
-
-    elif (job == 'edit_company')
-
-        # Edit company
-        if (id == ''){
-            $result  = 'error';
-            $message = 'id missing';
-        else
-            $query = "UPDATE it_companies SET ";
-            if (isset($_GET['rank']))         { $query .= "rank         = '" . mysqli_real_escape_string(db_connection, $_GET['rank'])         . "', "; }
-            if (isset($_GET['company_name'])) { $query .= "company_name = '" . mysqli_real_escape_string(db_connection, $_GET['company_name']) . "', "; }
-            if (isset($_GET['industries']))   { $query .= "industries   = '" . mysqli_real_escape_string(db_connection, $_GET['industries'])   . "', "; }
-            if (isset($_GET['revenue']))      { $query .= "revenue      = '" . mysqli_real_escape_string(db_connection, $_GET['revenue'])      . "', "; }
-            if (isset($_GET['fiscal_year']))  { $query .= "fiscal_year  = '" . mysqli_real_escape_string(db_connection, $_GET['fiscal_year'])  . "', "; }
-            if (isset($_GET['employees']))    { $query .= "employees    = '" . mysqli_real_escape_string(db_connection, $_GET['employees'])    . "', "; }
-            if (isset($_GET['market_cap']))   { $query .= "market_cap   = '" . mysqli_real_escape_string(db_connection, $_GET['market_cap'])   . "', "; }
-            if (isset($_GET['headquarters'])) { $query .= "headquarters = '" . mysqli_real_escape_string(db_connection, $_GET['headquarters']) . "'";   }
-            $query .= "WHERE company_id = '" . mysqli_real_escape_string(db_connection, id) . "'";
-            $query  = mysqli_query(db_connection, $query);
-            if (!$query)
-                $result  = 'error';
-                $message = 'query error';
-            else
-                $result  = 'success';
-                $message = 'query success';
-
-    elif (job == 'delete_company')
-
-        # Delete company
-        if (id == '')
-            $result  = 'error';
-            $message = 'id missing';
-        else
-            $query = "DELETE FROM it_companies WHERE company_id = '" . mysqli_real_escape_string(db_connection, id) . "'";
-            $query = mysqli_query(db_connection, $query);
-            if (!$query)
-                $result  = 'error';
-                $message = 'query error';
-            else
-                $result  = 'success';
-                $message = 'query success';
-
-"""
