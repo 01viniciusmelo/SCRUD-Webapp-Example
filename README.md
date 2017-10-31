@@ -1,11 +1,28 @@
-# SCRUD Webapp
-Implemented using Python, Flask, SQLAlchemy, DataTables, MySQL, JQuery, and JSON
+# SCRUD Webapp Example
 
-SCRUD : Search, Create, Read, Update and Delete
+Search, Create, Read, Update and Delete application for MySQL database table.
+
+Implemented using Python, Flask, SQLAlchemy, DataTables, JQuery, AJAX, JSON, and MySQL.
+
+User must create a MySQL database and table as specified in 'queries.sql'. User must define DB_USERNAME, DB_PASSWORD, and DATABASE_FILE in config.py or an operating system environment file.
 
 References:
-I converted the code provided at this link from php to python.
 https://www.sitepoint.com/creating-a-scrud-system-using-jquery-json-and-datatables/
+
+This webapp is a Python, Flask, SQLAlchemy version of the php sitepoint.com example.
+
+index.html : not modified
+layout.css : not modified
+queries.sql : not modified
+webapp.js : minor modifications
+data.php : converted to python in file views.py
+__init__.py : new file
+config.py : new file
+models.py : new file
+run.py : new file
+
+The new files could have been combined into one file for this simple webapp, but this is the file structure I use in more complicated apps.
+
 ============================
 
 philblower@gmail.com

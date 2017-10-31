@@ -1,5 +1,5 @@
 """
-    SCRUD: Implemented using Python, Flask, SQLAlchemy, MySQL, DataTables, JQuery and JSON
+    SCRUD: Implemented using Python, Flask, SQLAlchemy, DataTables, JQuery, AJAX, JSON, and MySQL
 """
 
 __version__ = 'v0.0.1'
