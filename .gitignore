@@ -1,5 +1,6 @@
 # .gitignore files specific to this project
 /tmp/
+/References/
 
 # below are common .gitignore files
 # Compiled source #
