@@ -16,7 +16,7 @@ This webapp is a Python version of the sitepoint.com example which uses php. The
 * queries.sql : not modified
 * webapp.js : minor modifications
 * data.php : converted to python in file views.py
-* __init__.py : new file
+* \__init__.py : new file
 * config.py : new file
 * models.py : new file
 * run.py : new file
@@ -24,6 +24,4 @@ This webapp is a Python version of the sitepoint.com example which uses php. The
 The new files could have been combined into one file for this simple webapp, but this is the file structure I use in more complicated apps.
 
 ============================
-
-philblower@gmail.com
 20171029
